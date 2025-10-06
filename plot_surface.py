@@ -25,6 +25,8 @@ import scheduler
 import mpi4pytorch as mpi
 import importlib
 
+sys.path.append(os.getcwd())
+
 def load_custom_model(path):
     """
     Load a model given a dotted path like 'my_models.MyCNN'

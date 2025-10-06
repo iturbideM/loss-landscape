@@ -23,6 +23,16 @@ import plot_1D
 import model_loader
 import scheduler
 import mpi4pytorch as mpi
+import importlib
+
+def load_custom_model(path):
+    """
+    Load a model given a dotted path like 'my_models.MyCNN'
+    """
+    module_name, class_name = path.rsplit(".", 1)
+    module = importlib.import_module(module_name)
+    cls = getattr(module, class_name)
+    return cls()
 
 def name_surface_file(args, dir_file):
     # skip if surf_file is specified in args
@@ -241,7 +251,14 @@ if __name__ == '__main__':
     #--------------------------------------------------------------------------
     # Load models and extract parameters
     #--------------------------------------------------------------------------
-    net = model_loader.load(args.dataset, args.model, args.model_file)
+
+    if args.model.startswith("custom:"):
+        # Example usage: --model custom:my_models.MyCNN
+        custom_path = args.model.replace("custom:", "")
+        net = load_custom_model(custom_path)
+    else:
+        net = model_loader.load(args.dataset, args.model, args.model_file)
+
     w = net_plotter.get_weights(net) # initial parameters
     s = copy.deepcopy(net.state_dict()) # deepcopy since state_dict are references
     if args.ngpu > 1:
